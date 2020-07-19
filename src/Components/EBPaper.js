@@ -1,15 +1,16 @@
 import React, {useState} from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import { sizing } from '@material-ui/system'
 
 import Paper from '@material-ui/core/Paper'
-import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import TextField from '@material-ui/core/TextField';
 import { Container, Box, Button } from '@material-ui/core';
 
 const EBPaper = (props) => {
 
-  const [ note, setNote ] = useState('');
+  const [ note, setNote ] = useState({
+    title: '',
+    content: ''
+  });
 
   const useStyles = makeStyles((theme) => ({
     root: {
@@ -19,11 +20,17 @@ const EBPaper = (props) => {
     },
     textfield: {
       width: '95%',
-      height: '95%',
+      height: '70%',
       margin: 'auto',
       maxWidth: '95%',
       minWidth: '95%',
-      maxHeight: '95%',
+      maxHeight: '70%',
+    },
+    title: {
+      width: '95%',
+      margin: '12px auto',
+      maxWidth: '95%',
+      minWidth: '95%',
     },
     button: {
       display: 'inline-flex !important',
@@ -41,18 +48,44 @@ const EBPaper = (props) => {
 
   const classes = useStyles()
 
+  const contentChangeHandler = (e) => {
+    setNote({
+      ...note,
+      content: e.target.value,
+    })
+  }
+
+  const titleChangeHandler = (e) => {
+    setNote({
+      ...note,
+      title: e.target.value
+    })
+  }
+
+  const newPaperHandler = (e) => {
+    setNote({
+      title: '',
+      content: '',
+    })
+  }
+
+  const savePaperHandler = () => {
+
+  }
+
   return(
     <Container className={classes.root}>
       <Box className={classes.buttonContainer}>
-        <Button className={classes.button} color='primary' variant='contained' disableElevation>
+        <Button onClick={savePaperHandler} className={classes.button} color='primary' variant='contained' disableElevation>
           Save
         </Button>
-        <Button className={classes.button} color='secondary' variant='contained' disableElevation>
+        <Button onClick={newPaperHandler} className={classes.button} color='secondary' variant='contained' disableElevation>
           New
         </Button>
       </Box>
+      <TextField className={classes.title} placeholder='Title here...' variant='outlined' value={note['title']} onChange={titleChangeHandler}/>
       <Paper elevation={0}>
-        <TextField variant="outlined" placeholder='Your notes here...' multiline rows={30} className={classes.textfield} multiline/>
+        <TextField onChange={contentChangeHandler} value={note['content']} variant="outlined" placeholder='Your notes here...' multiline rows={25} className={classes.textfield} multiline/>
       </Paper>
     </Container>
 
