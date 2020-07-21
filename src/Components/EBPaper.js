@@ -85,7 +85,7 @@ const EBPaper = (props) => {
       </Box>
       <TextField className={classes.title} placeholder='Title here...' variant='outlined' value={note['title']} onChange={titleChangeHandler}/>
       <Paper elevation={0}>
-        <TextField onChange={contentChangeHandler} value={note['content']} variant="outlined" placeholder='Your notes here...' multiline rows={25} className={classes.textfield} multiline/>
+        <TextField onChange={contentChangeHandler} value={note['content']} variant="outlined" placeholder='Your notes here...' multiline rows={25} className={classes.textfield}/>
       </Paper>
     </Container>
 

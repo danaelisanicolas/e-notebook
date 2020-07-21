@@ -10,6 +10,8 @@ import Box from '@material-ui/core/Box';
 
 import { makeStyles } from '@material-ui/core/styles';
 
+import './scripts/utilities'
+
 function App() {
   const useStyles = makeStyles((theme) => ({
     container: {
