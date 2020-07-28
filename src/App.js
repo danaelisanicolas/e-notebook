@@ -24,6 +24,12 @@ function App() {
     }
   }))
 
+  useEffect(() => {
+    if (user) {
+      getNotes()
+    }
+  }, [user])
+
   const classes = useStyles()
 
   const forceLogin = () => {
@@ -48,7 +54,6 @@ function App() {
   }
 
   const getNotes = () => {
-    console.log('test')
     if (user) {
       getNotesWithUserId(user.uid).onSnapshot(snapshot => {
         let n = []
@@ -66,7 +71,6 @@ function App() {
     setLogin(false)
     if (user) {
       setUser(user)
-      // getNotes()
     }
   })
 

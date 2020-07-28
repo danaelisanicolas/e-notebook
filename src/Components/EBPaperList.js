@@ -8,7 +8,7 @@ import { Box, Divider, ListItemSecondaryAction, IconButton, Typography } from '@
 import Delete from '@material-ui/icons/Delete'
 import { makeStyles } from '@material-ui/core/styles';
 
-const EBPaperList = (props) => {
+const EBPaperList = ({user, notes}) => {
   const useStyles = makeStyles((theme) => ({
     listContainer: {
       margin: '54px 10px',
@@ -24,7 +24,7 @@ const EBPaperList = (props) => {
         Saved Notes
       </Typography>
       <List id='notes-list'>
-        {props.notes ? (props.notes.map(note => {
+        {notes ? (notes.map(note => {
           return(
             <ListItem>
               <ListItemText>{note.title}</ListItemText>
@@ -33,7 +33,7 @@ const EBPaperList = (props) => {
                   <Delete />
                 </IconButton>
               </ListItemSecondaryAction>
-              <Divider></Divider>
+              <Divider />
             </ListItem>
           )
         })) : (
