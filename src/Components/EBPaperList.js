@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -23,34 +23,23 @@ const EBPaperList = (props) => {
       <Typography variant="h6">
         Saved Notes
       </Typography>
-      <List>
-        <ListItem>
-          <ListItemText>Lorem Ipsum</ListItemText>
-          <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="delete">
-              <Delete />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-        <Divider />
-        <ListItem>
-          <ListItemText>Cat Ipsum</ListItemText>
-          <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="delete">
-              <Delete />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-        <Divider />
-        <ListItem>
-          <ListItemText>Office Ipsum</ListItemText>
-          <ListItemSecondaryAction>
-            <IconButton edge="end" aria-label="delete">
-              <Delete />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-        <Divider />
+      <List id='notes-list'>
+        {props.notes ? (props.notes.map(note => {
+          return(
+            <ListItem>
+              <ListItemText>{note.title}</ListItemText>
+              <ListItemSecondaryAction>
+                <IconButton edge='end'>
+                  <Delete />
+                </IconButton>
+              </ListItemSecondaryAction>
+              <Divider></Divider>
+            </ListItem>
+          )
+        })) : (
+          <Typography variant='body2'>Your saved notes will appear here.</Typography>
+        )
+      }
      </List>
     </Box>
   )

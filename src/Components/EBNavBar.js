@@ -15,7 +15,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircle from '@material-ui/icons/AccountCircle'
 import { TextField } from '@material-ui/core';
 
-import { loginWithAuth, authStateChange, signinWithAuth } from '../scripts/firebaseHandler'
+import { authFirebase } from '../scripts/firebaseHandler'
 
 function getModalStyle() {
   const top = 50;
@@ -41,13 +41,20 @@ const EBNavBar = (props) => {
   const [confirmPasswordErrorText, setconfirmPasswordErrorText] = useState(null)
 
   const useStyles = makeStyles((theme) => ({
+    bar: {
+      height: '80px',
+    },
     brand: {
       flexGrow: 1,
-      margin: 'auto 44px'
+      margin: 'revert',
     },
     navItem: {
       display: 'flex',
-      justifyContent: 'flexEnd',
+      padding: 'auto',
+    },
+    navItemBox: {
+      padding: '0 4px',
+      margin: 'auto',
     },
     paper: {
       position: 'absolute',
@@ -74,18 +81,26 @@ const EBNavBar = (props) => {
     loginSignupButton: {
       margin: '20px 0px auto'
     },
+    redirect: {
+      width: '100%',
+      textAlign: 'right'
+    }
   }))
 
   useEffect(() => {
     const loggedOutLinks = document.querySelectorAll('#logout-link')
     const loggedInLinks = document.querySelectorAll('#login-link')
 
-    if (user) {
+    if (props.user) {
       loggedOutLinks.forEach(item => item.style.display = 'none')
-      loggedInLinks.forEach(item => item.style.display = 'block')
+      loggedInLinks.forEach(item => item.style.display = 'flex')
     } else {
-      loggedOutLinks.forEach(item => item.style.display = 'block')
+      loggedOutLinks.forEach(item => item.style.display = 'flex')
       loggedInLinks.forEach(item => item.style.display = 'none')
+    }
+
+    if (props.openLogin) {
+      openModalHandler()
     }
   })
 
@@ -105,6 +120,11 @@ const EBNavBar = (props) => {
   };
 
   const handleMenuClose = (e) => {
+    if (e.target.id === 'logout-menu') {
+      props.signout()
+    } else {
+
+    }
     setAnchorEl(null);
   };
 
@@ -113,26 +133,46 @@ const EBNavBar = (props) => {
   const openModalHandler = (e) => {
     if (e === 'login-navbar') {
       setIsLogin(true)
-    } else {
+    } else if (props.openLogin) {
+
+    }
+    else {
       setIsLogin(false)
     }
     handleModalOpen()
   }
 
   const loginButtonHandler = (e) => {
+    e.preventDefault()
+
     const loginForm = document.querySelector('#login-form')
 
-    loginWithAuth(loginForm['login-email'].value, loginForm['login-password'].value).then(cred => {
-      setUser(cred.user)
-      setOpen(false)
-    })
+    props.login(loginForm['login-email'].value, loginForm['login-password'].value)
+    setOpen(false)
+  }
+
+  const signUpButtonHandler = (e) => {
+    e.preventDefault()
+
+    const signupForm = document.querySelector('#signup-form')
+
+    props.signup(signupForm['signup-email'].value, signupForm['signup-password'].value)
+    setOpen(false)
+  }
+
+  const redirectLinkHandler = (e) => {
+    if (e.target.id === 'to-login') {
+      setIsLogin(true)
+    } else {
+      setIsLogin(false)
+    }
   }
 
   const validate = (e) => {
     if (e.target.id === 'login-email') {
       const loginForm = document.querySelector('#login-form')
 
-      if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(loginForm['login-email'].value)) {
+      if (/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(loginForm['login-email'].value)) {
         setEmailErrorText(null)
       } else {
         setEmailErrorText('Invalid Email')
@@ -146,7 +186,7 @@ const EBNavBar = (props) => {
       }
     } else if (e.target.id === 'signup-email') {
       const signupForm = document.querySelector('#signup-form')
-      if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(signupForm['signup-email'].value)) {
+      if (/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(signupForm['signup-email'].value)) {
         setEmailErrorText(null)
       } else {
         setEmailErrorText('Invalid Email')
@@ -168,58 +208,59 @@ const EBNavBar = (props) => {
     }
   }
 
-  const signUpButtonHandler = (e) => {
-    const signupForm = document.querySelector('#signup-form')
-
-    signinWithAuth(signupForm['signup-email'].value, signupForm['signup-password'].value).then(cred => {
-      setUser(cred.user)
-      setOpen(false)
-    })
-  }
-
   const loginBody = (
     <div style={modalStyle} id='login-modal' className={classes.paper}>
       <Typography variant='h4' className={classes.inputTitle}>Login</Typography>
-      <form id='login-form'>
+      <form id='login-form' onSubmit={loginButtonHandler}>
         <Box className={classes.box}>
-          <TextField id='login-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' />
+          <TextField id='login-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' autoComplete='email' />
         </Box>
         <Box className={classes.box}>
-          <TextField id='login-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type='password' />
+          <TextField id='login-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type='password' autoComplete='current-password' />
         </Box>
         <Box className={classes.box}>
-          <Button onClick={loginButtonHandler} className={classes.loginSignupButton} variant='contained' color='primary'>
+          <Button type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
             { isLogin ? 'Login' : 'Signup'}
           </Button>
         </Box>
       </form>
+      <Box className={classes.redirect}>
+        <Button onClick={redirectLinkHandler}>
+          <Typography id='to-signup' variant='body2' style={{'fontSize':'12px', 'color': 'darkblue'}}>Don't have an account? Sign up here ></Typography>
+        </Button>
+      </Box>
     </div>
   );
 
   const signupBody = (
     <div style={modalStyle} id='signup-modal' className={classes.paper}>
       <Typography variant='h4' className={classes.inputTitle}>Sign up</Typography>
-      <form id='signup-form'>
+      <form id='signup-form' onSubmit={signUpButtonHandler}>
         <Box className={classes.box}>
-          <TextField id='signup-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' />
+          <TextField id='signup-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' autoComplete='email' />
         </Box>
         <Box className={classes.box}>
-          <TextField id='signup-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type='password' />
+          <TextField id='signup-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type='password' autoComplete='new-password' />
         </Box>
         <Box className={classes.box}>
-          <TextField id='signup-confirm-pass' error={confirmPasswordErrorText ? true : false} helperText={confirmPasswordErrorText} onBlur={validate} className={classes.inputs} required label='Re-enter Password' type='password' />
+          <TextField id='signup-confirm-pass' error={confirmPasswordErrorText ? true : false} helperText={confirmPasswordErrorText} onBlur={validate} className={classes.inputs} required label='Re-enter Password' type='password' autoComplete='new-password' />
         </Box>
         <Box className={classes.box}>
-          <Button onClick={signUpButtonHandler} className={classes.loginSignupButton} variant='contained' color='primary'>
+          <Button type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
             { isLogin ? 'Login' : 'Signup'}
           </Button>
         </Box>
       </form>
+      <Box className={classes.redirect}>
+        <Button onClick={redirectLinkHandler}>
+          <Typography id='to-login' variant='body2' style={{'font-size':'12px', 'color': 'darkblue'}}>Already have an account? Log in here ></Typography>
+        </Button>
+      </Box>
     </div>
   );
 
   return(
-    <AppBar position="static">
+    <AppBar className={classes.bar} position="static">
       <Modal id='modal' open={open} onClose={handleModalClose}>
         {isLogin ? loginBody : signupBody}
       </Modal>
@@ -228,41 +269,51 @@ const EBNavBar = (props) => {
           E-Notebook
         </Typography>
         <ul className={classes.navItem}>
-          <Button variant="h6" color="inherit">
-            Home
-          </Button>
-          <Button variant="h6" color="inherit">
-            About
-          </Button>
-          <Button display={user ? 'none !important' : 'block !important'} id='logout-link' onClick={() => openModalHandler('login-navbar')} variant="h6" color="inherit">
-            Log in
-          </Button>
-          <Button display={user ? 'none' : 'block'} id='logout-link' onClick={() => openModalHandler('signup-navbar')} variant="h6" color="inherit">
-            Sign up
-          </Button>
-          <Button display={user ? 'block' : 'none'} id='login-link' variant="h6" color="inherit">
-            <IconButton color="inherit" onClick={handleMenu}>
-              <AccountCircle />
-            </IconButton>
-            <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: -44,
-                  horizontal: 78,
-                }}
-                open={menuOpen}
-                onClose={handleMenuClose}
-              >
-                <MenuItem id='account-menu' className={classes.menuList} onClick={handleMenuClose}>My Account</MenuItem>
-                <MenuItem id='logout-menu' className={classes.menuList} onClick={handleMenuClose}>Log out</MenuItem>
-              </Menu>
-          </Button>
+          <Box className={classes.navItemBox}>
+            <Button color="inherit">
+              Home
+            </Button>
+          </Box>
+          <Box className={classes.navItemBox}>
+            <Button color="inherit">
+              About
+            </Button>
+          </Box>
+          <Box className={classes.navItemBox}>
+            <Button id='logout-link' onClick={() => openModalHandler('login-navbar')} color="inherit">
+              Log in
+            </Button>
+          </Box>
+          <Box className={classes.navItemBox}>
+            <Button id='logout-link' onClick={() => openModalHandler('signup-navbar')} color="inherit">
+              Sign up
+            </Button>
+          </Box>
+          <Box className={classes.navItemBox}>
+            <Button id='login-link' color="inherit">
+              <IconButton color="inherit" onClick={handleMenu}>
+                <AccountCircle />
+              </IconButton>
+              <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: -44,
+                    horizontal: 78,
+                  }}
+                  open={menuOpen}
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem id='account-menu' className={classes.menuList} onClick={handleMenuClose}>My Account</MenuItem>
+                  <MenuItem id='logout-menu' className={classes.menuList} onClick={handleMenuClose}>Log out</MenuItem>
+                </Menu>
+            </Button>
+          </Box>
         </ul>
       </Toolbar>
     </AppBar>

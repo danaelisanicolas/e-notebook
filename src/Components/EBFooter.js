@@ -34,11 +34,11 @@ const EBFooter = (props) => {
     <Box className={classes.footerContainer}>
       <Divider />
       <footer className={classes.footer}>
-        <Typography className={classes.name} variant='p'>Dana Nicolas © {new Date().getFullYear()}</Typography>
-        <Typography className={classes.footerLinks} variant='p'>
+        <Typography className={classes.name} variant='caption'>Dana Nicolas © {new Date().getFullYear()}</Typography>
+        <Typography className={classes.footerLinks} variant='caption'>
           <RiGithubLine />
         </Typography>
-        <Typography className={classes.footerLinks} variant='p'>
+        <Typography className={classes.footerLinks} variant='caption'>
           <RiLinkedinLine />
         </Typography>
       </footer>

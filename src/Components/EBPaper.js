@@ -69,7 +69,13 @@ const EBPaper = (props) => {
     })
   }
 
-  const savePaperHandler = () => {
+  const savePaperHandler = (e) => {
+    if (props.user) {
+      //let it save
+    } else {
+      //insist to login OR signup
+      props.forceLogin()
+    }
 
   }
 

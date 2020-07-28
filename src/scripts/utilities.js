@@ -1,4 +1,4 @@
-import { dbHandler }  from './firebaseHandler'
+// import { dbHandler }  from './firebaseHandler'
 
 // load firebase
 var firebase = require('firebase')
@@ -17,4 +17,4 @@ var app = firebase.initializeApp({
   measurementId: "G-N5C1BBWLGJ"
 })
 
-const db = firebase.firestore()
+export const firebaseApp = app
