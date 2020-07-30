@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -8,7 +8,7 @@ import { Box, Divider, ListItemSecondaryAction, IconButton, Typography } from '@
 import Delete from '@material-ui/icons/Delete'
 import { makeStyles } from '@material-ui/core/styles';
 
-const EBPaperList = ({user, notes}) => {
+const EBPaperList = ({user, notes, showNote , deleteNote}) => {
   const useStyles = makeStyles((theme) => ({
     listContainer: {
       margin: '54px 10px',
@@ -16,7 +16,18 @@ const EBPaperList = ({user, notes}) => {
     }
   }))
 
+
+
   const classes = useStyles()
+
+  const listItemClickHandler = (e) => {
+    showNote(e.currentTarget.parentElement.getAttribute('data-id'))
+  }
+
+  const deleteListItemHandler = (e) => {
+    deleteNote(e.currentTarget.parentElement.parentElement.getAttribute('data-id'))
+    e.stopPropagation()
+  }
 
   return(
     <Box className={classes.listContainer}>
@@ -26,10 +37,10 @@ const EBPaperList = ({user, notes}) => {
       <List id='notes-list'>
         {notes ? (notes.map(note => {
           return(
-            <ListItem>
-              <ListItemText>{note.title}</ListItemText>
+            <ListItem data-id={note.id}>
+              <ListItemText onClick={listItemClickHandler}>{note.title}</ListItemText>
               <ListItemSecondaryAction>
-                <IconButton edge='end'>
+                <IconButton edge='end' onClick={deleteListItemHandler}>
                   <Delete />
                 </IconButton>
               </ListItemSecondaryAction>
