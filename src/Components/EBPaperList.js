@@ -8,15 +8,13 @@ import { Box, Divider, ListItemSecondaryAction, IconButton, Typography } from '@
 import Delete from '@material-ui/icons/Delete'
 import { makeStyles } from '@material-ui/core/styles';
 
-const EBPaperList = ({user, notes, showNote , deleteNote}) => {
+const EBPaperList = ({user, notes, showNote , deleteNote, errMessage}) => {
   const useStyles = makeStyles((theme) => ({
     listContainer: {
       margin: '54px 10px',
       width: '25%',
     }
   }))
-
-
 
   const classes = useStyles()
 
@@ -34,6 +32,7 @@ const EBPaperList = ({user, notes, showNote , deleteNote}) => {
       <Typography variant="h6">
         Saved Notes
       </Typography>
+      {errMessage ? <Typography variant='body2'>{errMessage}</Typography> : null}
       <List id='notes-list'>
         {notes ? (notes.map(note => {
           return(

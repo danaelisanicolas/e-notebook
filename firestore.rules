@@ -1,0 +1,6 @@
+rules_version = '2';
+service cloud.firestore {
+  match /notes/{note} {
+    allow read, write: if request.auth.uid != null
+  }
+}
