@@ -11,12 +11,16 @@ import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
 import Modal from '@material-ui/core/Modal'
+import IconButton from '@material-ui/core/IconButton'
+import InputAdornment from '@material-ui/core/InputAdornment';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent'
 
 import { makeStyles } from '@material-ui/core/styles';
+import { Visibility, VisibilityOff } from '@material-ui/icons'
 
 import '../scripts/utilities'
 import { loginWithAuth, signinWithAuth, authFirebase, getNotesWithUserId, deleteNoteWithId, saveNoteOnUserId, saveExistingNoteOnUserId } from '../scripts/firebaseHandler'
@@ -38,18 +42,25 @@ const EBMain = (props) => {
   const [ user, setUser ] = useState(null)
   const [ notes, setNotes ] = useState(null)
   const [ errorLoginSignupText, setErrorLoginSignupText ] = useState(null)
+  const [ errMessage, setErrMessage ] = useState(null)
   const [ currentNote, setCurrentNote ] = useState(null)
   const [ successSave, setSuccessSave ] = useState(false)
   const [ deleteNoteId, setDeleteNoteId ] = useState(null)
+  const [ forgotPasswordModal, setForgotPasswordModal ] = useState(false)
+  const [ showPassword, setShowPassword ] = useState(false);
+  const [ showConfirmPassword, setShowConfirmPassword ] = useState(false);
+  const [ passwordResetMessage, setPasswordResetMessage ] = useState(null);
 
   const [modalStyle] = useState(getModalStyle);
   const [modalOpen, setModalOpen] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openAccountDialog, setOpenAccountDialog] = useState(false);
 
   const [isLogin, setIsLogin] = useState(false);
   const [passwordErrorText, setPasswordErrorText] = useState(null)
   const [emailErrorText, setEmailErrorText] = useState(null)
   const [confirmPasswordErrorText, setconfirmPasswordErrorText] = useState(null)
+  const [disableLoginSignupButton, setDisableLoginSignupButton] = useState(false)
 
   const useStyles = makeStyles((theme) => ({
     container: {
@@ -66,7 +77,8 @@ const EBMain = (props) => {
     },
     inputTitle: {
       textAlign: 'center',
-      margin: '34px 0px auto'
+      margin: '34px 0px auto',
+      width: '80%',
     },
     box: {
       margin: '14px auto',
@@ -74,10 +86,15 @@ const EBMain = (props) => {
       display: 'flex',
       justifyContent: 'center',
     },
+    back: {
+      margin: '14px auto',
+      display: 'flex',
+      justifyContent: 'flex-start'
+    },
     loginSignupButton: {
       margin: '20px 0px auto'
     },
-    redirect: {
+    additionalActions: {
       width: '100%',
       textAlign: 'right'
     },
@@ -85,6 +102,12 @@ const EBMain = (props) => {
       width: '100%',
       textAlign: 'center',
       color: 'red',
+      margin: '10px 0px',
+    },
+    confirmText: {
+      width: '100%',
+      textAlign: 'center',
+      color: 'blue',
       margin: '10px 0px',
     }
   }))
@@ -96,6 +119,14 @@ const EBMain = (props) => {
       setNotes(null)
     }
   }, [user])
+
+  useEffect(() => {
+    if ((emailErrorText) || (passwordErrorText) || (confirmPasswordErrorText)) {
+      setDisableLoginSignupButton(true)
+    } else {
+      setDisableLoginSignupButton(false)
+    }
+  }, [emailErrorText, passwordErrorText, confirmPasswordErrorText])
 
   const classes = useStyles()
 
@@ -109,6 +140,9 @@ const EBMain = (props) => {
     setEmailErrorText(null)
     setErrorLoginSignupText(null)
     setModalOpen(false);
+    setForgotPasswordModal(false)
+    setShowPassword(false)
+    setShowConfirmPassword(false)
   }
 
   const loginHandler = () => {
@@ -119,6 +153,18 @@ const EBMain = (props) => {
   const signupHandler = () => {
     setIsLogin(false)
     handleModalOpen()
+  }
+
+  const accountDetailsHandler = () => {
+    setOpenAccountDialog(true)
+  }
+
+  const forgotPasswordHandler = (e) => {
+    setForgotPasswordModal(true)
+  }
+
+  const backButtonHandler = (e) => {
+    setForgotPasswordModal(false)
   }
 
   const redirectLinkHandler = (e) => {
@@ -166,6 +212,13 @@ const EBMain = (props) => {
       } else {
         setconfirmPasswordErrorText('Must be the same as password')
       }
+    } else if (e.target.id === 'forgot-password-email') {
+      const forgotPasswordForm = document.querySelector('#forgot-password-form')
+      if (/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(forgotPasswordForm['forgot-password-email'].value)) {
+        setEmailErrorText(null)
+      } else {
+        setEmailErrorText('Invalid Email')
+      }
     }
   }
 
@@ -179,17 +232,19 @@ const EBMain = (props) => {
     setOpenDeleteDialog(true)
   }
 
-  const handleCloseDeleteDialog = (e) => {
+  const handleCloseDialog = (e) => {
     if (e.target.parentElement.id) {
       if (e.target.parentElement.id === 'confirm-delete') {
         deleteNoteWithId(deleteNoteId).then(res => {
           setCurrentNote(null)
         }).catch(err => {
-          console.log(err.message)
+          setErrMessage(err.message)
         })
+        setOpenDeleteDialog(false)
+      } else if (e.target.parentElement.id === 'confirm-account') {
+        setOpenAccountDialog(false)
       }
     }
-    setOpenDeleteDialog(false)
   }
 
   const saveNote = (note) => {
@@ -227,8 +282,10 @@ const EBMain = (props) => {
       setModalOpen(false)
     }).catch(err => {
       console.log(err)
-      if (err.code==='auth/user-not-found') {
+      if (err.code === 'auth/user-not-found') {
         setErrorLoginSignupText('Uh-oh. It says you aren\'t yet on our system. Did you mean to sign up?')
+      } else if (err.code === 'auth/wrong-password') {
+        setErrorLoginSignupText('Wrong password. Please login with your e-notebook account email and password.')
       } else {
         setErrorLoginSignupText(err.message)
       }
@@ -244,13 +301,34 @@ const EBMain = (props) => {
       setUser(cred.user)
       setModalOpen(false)
     }).catch(err => {
-      setErrorLoginSignupText(err.message)
+      if (err.code === 'auth/email-already-exists') {
+        setErrorLoginSignupText('This email is already taken. Did you mean to log in?')
+      } else {
+        setErrorLoginSignupText(err.message)
+      }
     })
+  }
+
+  const forgotPasswordButtonHandler = (e) => {
+    e.preventDefault()
+
+    const forgotPasswordForm = document.querySelector('#forgot-password-form')
+    authFirebase().sendPasswordResetEmail(forgotPasswordForm['forgot-password-email'].value)
+      .then(() => {
+        setPasswordResetMessage('Reset password link has been sent to your email.')
+      })
+      .catch((err) => {
+        setErrorLoginSignupText(err.code + '. Sorry that\'s on us. Please try again later.')
+      });
   }
 
   const signoutHandler = () => {
     authFirebase().signOut()
   }
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword)
+
+  const handleClickShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword)
 
   const getNotes = () => {
     if (user) {
@@ -272,7 +350,36 @@ const EBMain = (props) => {
     setUser(user)
   })
 
-  const loginBody = (
+  const forgotPasswordBody = (
+    <div style={modalStyle} id='forgot-password-modal' className={classes.paper}>
+      <Box className={classes.back}>
+        <Button color='primary' onClick={backButtonHandler}>
+          {'< Back'}
+        </Button>
+        <Typography variant='h6' className={classes.inputTitle}>Forgot Password</Typography>
+      </Box>
+      {passwordResetMessage ? (
+        <Box>
+          <Typography variant='body2' className={classes.confirmText}>{passwordResetMessage}</Typography>
+        </Box>) : null}
+      {errorLoginSignupText ? (
+      <Box>
+        <Typography variant='body2' className={classes.errorText}>{passwordResetMessage}</Typography>
+      </Box>) : null}
+      <form id='forgot-password-form' onSubmit={forgotPasswordButtonHandler}>
+        <Box className={classes.box}>
+          <TextField id='forgot-password-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' autoComplete='email' />
+        </Box>
+        <Box className={classes.box}>
+          <Button type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
+            Reset Password
+          </Button>
+        </Box>
+      </form>
+    </div>
+  )
+
+  const loginBody = ( forgotPasswordModal ? forgotPasswordBody : (
     <div style={modalStyle} id='login-modal' className={classes.paper}>
       <Typography variant='h4' className={classes.inputTitle}>Login</Typography>
       {errorLoginSignupText ? (<Typography variant='body2' className={classes.errorText}>{errorLoginSignupText}</Typography>) : null}
@@ -281,21 +388,34 @@ const EBMain = (props) => {
           <TextField id='login-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' autoComplete='email' />
         </Box>
         <Box className={classes.box}>
-          <TextField id='login-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type='password' autoComplete='current-password' />
+          <TextField id='login-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type={showPassword ? 'text' : 'password'} autoComplete='current-password' InputProps={{
+               endAdornment: (<InputAdornment position="end">
+                  <IconButton aria-label='toggle password visibility'
+                    edge="end"
+                    onClick={handleClickShowPassword} >
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>)
+           }} />
         </Box>
         <Box className={classes.box}>
-          <Button type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
-            { isLogin ? 'Login' : 'Signup'}
+          <Button disabled={disableLoginSignupButton ? true : false} type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
+            Login
           </Button>
         </Box>
       </form>
-      <Box className={classes.redirect}>
+      <Box className={classes.additionalActions}>
+        <Button onClick={forgotPasswordHandler}>
+          <Typography id='forgot-password' variant='body2' style={{'fontSize':'12px', 'color': 'darkblue'}}>Forgot Password?</Typography>
+        </Button>
+      </Box>
+      <Box className={classes.additionalActions}>
         <Button onClick={redirectLinkHandler}>
           <Typography id='to-signup' variant='body2' style={{'fontSize':'12px', 'color': 'darkblue'}}>Don't have an account? Sign up here ></Typography>
         </Button>
       </Box>
     </div>
-  )
+  ))
 
   const signupBody = (
     <div style={modalStyle} id='signup-modal' className={classes.paper}>
@@ -306,18 +426,34 @@ const EBMain = (props) => {
           <TextField id='signup-email' error={emailErrorText ? true : false} helperText={emailErrorText} onBlur={validate} className={classes.inputs} required label='Email' autoComplete='email' />
         </Box>
         <Box className={classes.box}>
-          <TextField id='signup-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type='password' autoComplete='new-password' />
+          <TextField id='signup-password' error={passwordErrorText ? true : false} helperText={passwordErrorText} onBlur={validate} className={classes.inputs} required label='Password' type={ showPassword ? 'text' : 'password'} autoComplete='new-password' InputProps={{
+               endAdornment: (<InputAdornment position="end">
+                  <IconButton aria-label='toggle password visibility'
+                    edge="end"
+                    onClick={handleClickShowPassword} >
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>)
+           }} />
         </Box>
         <Box className={classes.box}>
-          <TextField id='signup-confirm-pass' error={confirmPasswordErrorText ? true : false} helperText={confirmPasswordErrorText} onBlur={validate} className={classes.inputs} required label='Re-enter Password' type='password' autoComplete='new-password' />
+          <TextField id='signup-confirm-pass' error={confirmPasswordErrorText ? true : false} helperText={confirmPasswordErrorText} onBlur={validate} className={classes.inputs} required label='Re-enter Password' type={showConfirmPassword ? 'text' : 'password'} autoComplete='new-password' InputProps={{
+               endAdornment: (<InputAdornment position="end">
+                  <IconButton aria-label='toggle confirm password visibility'
+                    edge="end"
+                    onClick={handleClickShowConfirmPassword} >
+                    {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>)
+           }} />
         </Box>
         <Box className={classes.box}>
-          <Button type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
-            { isLogin ? 'Login' : 'Signup'}
+          <Button disabled={disableLoginSignupButton ? true : false} type='submit' className={classes.loginSignupButton} variant='contained' color='primary'>
+            Signup
           </Button>
         </Box>
       </form>
-      <Box className={classes.redirect}>
+      <Box className={classes.additionalActions}>
         <Button onClick={redirectLinkHandler}>
           <Typography id='to-login' variant='body2' style={{'font-size':'12px', 'color': 'darkblue'}}>Already have an account? Log in here ></Typography>
         </Button>
@@ -328,31 +464,50 @@ const EBMain = (props) => {
   const deleteConfirmationDialog = (
     <Dialog
         open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
+        onClose={handleCloseDialog}
         aria-labelledby="alert-dialog-title"
       >
         <DialogTitle id="alert-dialog-title">{'Are you sure you want to delete this note?'}</DialogTitle>
         <DialogActions>
-          <Button id='cancel-delete' onClick={handleCloseDeleteDialog} color="primary">
+          <Button id='cancel-delete' onClick={handleCloseDialog} color="primary">
             No
           </Button>
-          <Button id='confirm-delete' onClick={handleCloseDeleteDialog} color="primary" autoFocus>
+          <Button id='confirm-delete' onClick={handleCloseDialog} color="primary" autoFocus>
             Yes I'm sure
           </Button>
         </DialogActions>
       </Dialog>
   )
 
+  const accountDetailsDialog = (
+    <Dialog
+      open={openAccountDialog}
+      onClose={handleCloseDialog}
+      aria-labelledby="account-dialog-title"
+    >
+      <DialogTitle id='account-dialog-title'>{'Account Details'}</DialogTitle>
+      <DialogContent>
+        <Typography variant='body2'>{user ? 'Logged in as: ' + (user.email) : ''}</Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button id='confirm-account' onClick={handleCloseDialog} color="primary">
+          Ok
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+
   return(
     <Box>
       {openDeleteDialog ? deleteConfirmationDialog : null}
+      {openAccountDialog ? accountDetailsDialog : null}
       <Modal id='modal' open={modalOpen} onClose={handleModalClose}>
         {isLogin ? loginBody : signupBody}
       </Modal>
-      <EBNavBar openLogin={login} user={user} login={loginHandler} signup={signupHandler} signout={signoutHandler}/>
+      <EBNavBar openLogin={login} user={user} login={loginHandler} signup={signupHandler} signout={signoutHandler} account={accountDetailsHandler}/>
       <Box className={classes.container}>
         <EBPaper currentNote={currentNote} saveNote={saveNote} successSave={successSave}/>
-        <EBPaperList notes={notes} showNote={showNote} deleteNote={deleteNote} />
+        <EBPaperList notes={notes} showNote={showNote} deleteNote={deleteNote} errMessage={errMessage}/>
       </Box>
       <EBFooter />
     </Box>

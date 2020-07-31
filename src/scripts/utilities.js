@@ -11,7 +11,6 @@ var app = firebase.initializeApp({
   authDomain: "e-notebook-d52c3.firebaseapp.com",
   databaseURL: "https://e-notebook-d52c3.firebaseio.com",
   projectId: "e-notebook-d52c3",
-  storageBucket: "e-notebook-d52c3.appspot.com",
   messagingSenderId: "427244786677",
   appId: "1:427244786677:web:41200dd40e6dcdeb1846bc",
   measurementId: "G-N5C1BBWLGJ"

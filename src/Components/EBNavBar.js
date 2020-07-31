@@ -59,8 +59,8 @@ const EBNavBar = (props) => {
   const handleMenuClose = (e) => {
     if (e.target.id === 'logout-menu') {
       props.signout()
-    } else {
-
+    } else if (e.target.id === 'account-menu') {
+      props.account()
     }
     setAnchorEl(null);
   };
@@ -82,16 +82,6 @@ const EBNavBar = (props) => {
           E-Notebook
         </Typography>
         <ul className={classes.navItem}>
-          <Box className={classes.navItemBox}>
-            <Button color="inherit">
-              Home
-            </Button>
-          </Box>
-          <Box className={classes.navItemBox}>
-            <Button color="inherit">
-              About
-            </Button>
-          </Box>
           <Box className={classes.navItemBox}>
             <Button id='logout-link' onClick={() => openModalHandler('login-navbar')} color="inherit">
               Log in
