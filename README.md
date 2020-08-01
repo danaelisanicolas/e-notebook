@@ -26,6 +26,7 @@ If needed to run on firebase serve:
 ## Overview
 
 // Main functionalities
+
 Write your notes
 - Write a title and the content of your note in the provided text fields.
 
@@ -48,6 +49,7 @@ Deleting saved notes
 - A delete button beside a note can be clicked to delete it. A confirmation box will show before the user can finally delete a note.
 
 // Authentication actions
+
 (Note: All authentication is provided by firebase)
 
 Signing up
