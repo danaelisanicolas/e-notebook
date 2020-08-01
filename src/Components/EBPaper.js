@@ -13,6 +13,7 @@ const EBPaper = (props) => {
   });
   const [ contentErrorText, setContentErrorText ] = useState(null)
   const [ titleErrorText, setTitleErrorText ] = useState(null)
+  const [ disableSaveButton, setDisableSaveButton ] = useState(false)
 
   const useStyles = makeStyles((theme) => ({
     root: {
@@ -71,6 +72,14 @@ const EBPaper = (props) => {
     })
   }, [props.successSave])
 
+  useEffect(() => {
+    if ((titleErrorText) || (contentErrorText)) {
+      setDisableSaveButton(true)
+    } else {
+      setDisableSaveButton(false)
+    }
+  }, [titleErrorText, contentErrorText])
+
   const contentChangeHandler = (e) => {
     if (e.target.value.length > 1000000) {
       setContentErrorText(e.target.value.length.toString() + '/1000000')
@@ -105,22 +114,29 @@ const EBPaper = (props) => {
   }
 
   const savePaperHandler = (e) => {
-    props.saveNote(note)
+    if (note.title === '') {
+      props.saveNote({
+        ...note,
+        title: 'Untitled'
+      })
+    } else {
+      props.saveNote(note)
+    }
   }
 
   return(
     <Container className={classes.root}>
       <Box className={classes.buttonContainer}>
-        <Button onClick={savePaperHandler} className={classes.button} color='primary' variant='contained' disableElevation>
+        <Button disabled={disableSaveButton} onClick={savePaperHandler} className={classes.button} color='primary' variant='contained' disableElevation>
           Save
         </Button>
         <Button onClick={newPaperHandler} className={classes.button} color='secondary' variant='contained' disableElevation>
           New
         </Button>
       </Box>
-      <TextField className={classes.title} error={titleErrorText ? true : false} helperText={titleErrorText} placeholder='Title here...' variant='outlined' value={note['title']} onChange={titleChangeHandler}/>
+      <TextField className={classes.title} error={titleErrorText} helperText={titleErrorText} placeholder='Title here...' variant='outlined' value={note['title']} onChange={titleChangeHandler}/>
       <Paper elevation={0}>
-        <TextField onChange={contentChangeHandler} error={contentErrorText ? true : false} helperText={contentErrorText} value={note['content']} variant="outlined" placeholder='Your notes here...' multiline rows={25} className={classes.textfield}/>
+        <TextField onChange={contentChangeHandler} error={contentErrorText} helperText={contentErrorText} value={note['content']} variant="outlined" placeholder='Your notes here...' multiline rows={25} className={classes.textfield}/>
       </Paper>
     </Container>
 
