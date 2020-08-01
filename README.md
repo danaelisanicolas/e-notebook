@@ -90,7 +90,7 @@ This is my first attempt at creating a web application and at the same time usin
 
 I do acknowledge that my application is not as flashy and pretty, but this is more focusing on how web applications are created, developed, and deployed to the web. I am proud with what I've accomplished with the amount of time I've been exploring web development. While development I am constantly able to add a bit of expected UX functionalities such as text field validations, showing password, forgot password functionality, etc.
 
-I would also like to learn more about best web development patterns and code structures to improve my code. As such, I have some help from my friends (Shoutout to Joe Ferrer for always helping me when I'm stuck and reviewing whenever he has time!) when they have time. In addition, I also acknowledge the lack of mobile responsiveness of this app. I will, if time and motivation permits, fix that. For now I would like to explore on other functionalities I can do on a web app.
+I would also like to learn more about best web development patterns and code structures to improve my code. As such, I have some help from my friends (Shoutout to Joe Ferrer for always helping me whenever I'm stuck!) when they have time. In addition, I also acknowledge the lack of mobile responsiveness of this app. I will, if time and motivation permits, fix that. For now I would like to explore on other functionalities I can do on a web app.
 
 ## License
 MIT License
